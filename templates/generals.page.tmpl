@@ -71,15 +71,42 @@
             </div>
         </form>
         `;
+        //note:
         //when people click on the date-choose box and pick a date, it will return a result to layout.tmpl line 246, 
         //which includes title, msg, and a callback func
         attention.custom({
             title: 'Choose your dates',
             msg: html,
+
+            willOpen: () => {
+                        const elem = document.getElementById("reservation-dates-modal");
+                        const rp = new DateRangePicker(elem, {
+                            format: 'yyyy-mm-dd',
+                            showOnFocus: true,
+                        })
+                    },
+            didOpen: () => {
+                        document.getElementById("start").removeAttribute("disabled");
+                        document.getElementById("end").removeAttribute("disabled");
+                    },        
+            preConfirm: () => {
+                        return [
+                            document.getElementById('start').value,
+                            document.getElementById('end').value
+                        ]
+                    },
             callback: function(result){
-                console.log("called");
+                //get the reference to the form above. Then create a form data variable that contains all elements and variables in 'form'
+                let form = document.getElementById("check-availability-form");
+                let formData = new FormData(form);
+
+                formData.append("csrf_token", "{{.CSRFToken}}");
+
                 //perform AJAX request
-                fetch('/search-availability-json')
+                fetch('/search-availability-json',{
+                    method: "post",
+                    body: formData,
+                })
                     .then(response => response.json())
                     .then(data => {
                         console.log(data);
