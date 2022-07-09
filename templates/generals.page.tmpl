@@ -71,9 +71,22 @@
             </div>
         </form>
         `;
+        //when people click on the date-choose box and pick a date, it will return a result to layout.tmpl line 246, 
+        //which includes title, msg, and a callback func
         attention.custom({
             title: 'Choose your dates',
             msg: html,
+            callback: function(result){
+                console.log("called");
+                //perform AJAX request
+                fetch('/search-availability-json')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        console.log(data.ok);
+                        console.log(data.message);
+                    })
+            }
         });
     })
 </script>

@@ -217,7 +217,7 @@
                     title = "",
                 } = c;
 
-                const { value: formValues } = await Swal.fire({
+                const { value: result } = await Swal.fire({
                     title: title,
                     html: msg,
                     backdrop: false,
@@ -241,9 +241,23 @@
                         ]
                     }
                 })
-
-                if (formValues) {
-                    Swal.fire(JSON.stringify(formValues))
+                
+                //if they click the web
+                if(result){
+                    //if they did not click cancel on the box
+                    if(result.dismiss !== Swal.DismissReason.cancel){
+                        //and if there are some data get inputted in the box
+                        if(result.value !== ""){
+                            //and if there is a callback function, we call it
+                            if(c.callback !== undefined){
+                                c.callback(result);
+                            }
+                        }else{//if there isn't any input in the box, we do nothing
+                            c.callback(false);
+                        }
+                    }else{//if they click cancel on the box, we do nothing
+                        c.callback(false);
+                    }
                 }
             }
 
