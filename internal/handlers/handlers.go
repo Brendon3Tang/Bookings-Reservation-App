@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/tsawler/bookings-app/internal/config"
+	"github.com/tsawler/bookings-app/internal/forms"
 	"github.com/tsawler/bookings-app/internal/models"
 	"github.com/tsawler/bookings-app/internal/render"
 )
@@ -56,7 +57,52 @@ func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
 
 // Reservation renders the make a reservation page and displays form
 func (m *Repository) Reservation(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, r, "make-reservation.page.tmpl", &models.TemplateData{})
+	var emptyReservation models.Reservation
+	data := make(map[string]interface{})
+	data["reservation"] = emptyReservation //to keep data the clients have written after they submitting and getting error msg,
+	//it is important to keep the variable name same with the variable in PostReservation func
+
+	render.RenderTemplate(w, r, "make-reservation.page.tmpl", &models.TemplateData{
+		Form: forms.New(nil),
+		Data: data,
+	})
+}
+
+// PostReservation handles the posting of a reservation form
+func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	reservation := models.Reservation{
+		FirstName: r.Form.Get("first_name"),
+		LastName:  r.Form.Get("last_name"),
+		Email:     r.Form.Get("email"),
+		Phone:     r.Form.Get("phone"),
+	}
+
+	//create a form data using the postData
+	form := forms.New(r.PostForm)
+
+	//check if the forms are valid. if not, Has func will add a error msg into the map errors
+	//form.Has("first_name", r)
+
+	form.Required("first_name", "last_name", "email")
+
+	form.MinLength("first_name", 3, r)
+
+	//check again. if it is not valid, we store the info the clients have input, and reder a new web with those info. (so the clients don't lose the info they have written)
+	if !form.Valid() {
+		data := make(map[string]interface{})
+		data["reservation"] = reservation
+		render.RenderTemplate(w, r, "make-reservation.page.tmpl", &models.TemplateData{
+			Form: form,
+			Data: data,
+		})
+		return
+	}
 }
 
 // Generals renders the room page
