@@ -105,6 +105,27 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+
+	//use the seesion to store the info and then when we redirect to the summary page we can take the info out and put it into the new web page
+	//don't forget to register the data we want to put into the Session in the main page
+	m.App.Session.Put(r.Context(), "reservation", reservation)
+	//after we put the data into the session, we redirect the client into a new web page
+	http.Redirect(w, r, "/reservation-summary", http.StatusSeeOther)
+}
+
+func (m *Repository) ReservationSummary(w http.ResponseWriter, r *http.Request) {
+	//the session don't know the type of the data(reservation, in this case) that we store in it, so we need to type assert
+	reservation, ok := m.App.Session.Get(r.Context(), "reservation").(models.Reservation) //after the last "." is type assert. If it works, return true to ok
+	if !ok {
+		log.Println("cannot get item from session")
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["reservation"] = reservation
+	render.RenderTemplate(w, r, "reservation.page.tmpl", &models.TemplateData{
+		Data: data,
+	})
 }
 
 // Generals renders the room page
