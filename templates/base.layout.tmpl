@@ -153,6 +153,19 @@
             })
         }
 
+        //get the dot that golang template syntax means some kind of data
+        {{with .Error}}
+        notify("{{.}}", "error")//put a notify func here so that every time when I load a page, if I have to pop some msg, it will do
+        {{end}}
+
+        {{with .Flash}}
+        notify("{{.}}", "success")
+        {{end}}
+
+        {{with .Warning}}
+        notify("{{.}}", "warning")
+        {{end}}
+
         function Prompt() {
             let toast = function (c) {
                 const{
