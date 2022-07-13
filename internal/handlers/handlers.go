@@ -95,7 +95,7 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 
 	form.IsEmail("email")
 
-	//check again. if it is not valid, we store the info the clients have input, and reder a new web with those info. (so the clients don't lose the info they have written)
+	//check again. if it is not valid, we store the info the clients have input, and render a new web with those info. (so the clients don't lose the info they have written)
 	if !form.Valid() {
 		data := make(map[string]interface{})
 		data["reservation"] = reservation
