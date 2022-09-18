@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/alexedwards/scs/v2"
+	"github.com/tsawler/bookings-app/helpers"
 	"github.com/tsawler/bookings-app/internal/config"
 	"github.com/tsawler/bookings-app/internal/driver"
 	"github.com/tsawler/bookings-app/internal/handlers"
@@ -42,6 +43,9 @@ func main() {
 func run() (*driver.DB, error) {
 	// what am I going to put in the session
 	gob.Register(models.Reservation{})
+	gob.Register(models.User{})
+	gob.Register(models.Restriction{})
+	gob.Register(models.Room{})
 
 	// change this to true when in production
 	app.InProduction = false
@@ -76,8 +80,8 @@ func run() (*driver.DB, error) {
 	repo := handlers.NewRepo(&app, db)
 	handlers.NewHandlers(repo)
 
-	render.NewTemplates(&app)
-
+	render.NewRenderer(&app)
+	helpers.NewHelpers(&app)
 	fmt.Println(fmt.Sprintf("Staring application on port %s", portNumber))
 	return db, err
 }
