@@ -1,5 +1,6 @@
 package dbrepo
 
+//put any functions that we want to be available in the interface in repository.go
 import (
 	"database/sql"
 
