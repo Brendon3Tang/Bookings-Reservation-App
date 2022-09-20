@@ -104,7 +104,7 @@ func (m *postgreDBRepo) SearchAvailabilityForAllRooms(start, end time.Time) ([]m
 		select 
 			r.id, r.room_name
 		from 
-			room r
+			rooms r
 		where
 			r.id not in 
 			(select room_id from room_restrictions rr where $1 < rr.end_date and $2 > rr.start_date)
