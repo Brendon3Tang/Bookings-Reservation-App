@@ -49,9 +49,9 @@
 {{end}}
 
 {{define "js"}}
-    <script>
-        document.getElementById("check-availability-button").addEventListener("click", function () {
-            let html = `
+<script>
+    document.getElementById("check-availability-button").addEventListener("click", function () {
+        let html = `
         <form id="check-availability-form" action="" method="post" novalidate class="needs-validation">
             <div class="form-row">
                 <div class="col">
@@ -68,10 +68,71 @@
             </div>
         </form>
         `;
-            attention.custom({
-                title: 'Choose your dates',
-                msg: html,
-            });
-        })
-    </script>
+        //note:
+        //when people click on the date-choose box and pick a date, it will return a result to layout.tmpl line 246, 
+        //which includes title, msg, and a callback func
+        attention.custom({
+            title: 'Choose your dates',
+            msg: html,
+
+            willOpen: () => {
+                        const elem = document.getElementById("reservation-dates-modal");
+                        const rp = new DateRangePicker(elem, {
+                            format: 'yyyy-mm-dd',
+                            showOnFocus: true,
+                            minDate: new Date(),
+                        })
+                    },
+            didOpen: () => {
+                        document.getElementById("start").removeAttribute("disabled");
+                        document.getElementById("end").removeAttribute("disabled");
+                    },        
+            preConfirm: () => {
+                        return [
+                            document.getElementById('start').value,
+                            document.getElementById('end').value
+                        ]
+                    },
+            callback: function(result){
+                //get the reference to the form above. Then create a form data variable that contains all elements and variables in 'form'
+                let form = document.getElementById("check-availability-form");
+                let formData = new FormData(form);
+
+                formData.append("csrf_token", "{{.CSRFToken}}");
+                formData.append("room_id", "2");
+
+                //perform AJAX request
+                fetch('/search-availability-json',{
+                    method: "post",
+                    body: formData,
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data.ok){
+                            //console.log("room is available")
+                            attention.custom({
+                                icon: "success",
+                                showConfirmButton: false,
+                                msg: '<p>Room is available</p>'
+                                    + '<p><a href = "/book-room?id='
+                                    + data.room_id
+                                    + '&s='
+                                    + data.start_date
+                                    + '&e='
+                                    + data.end_date
+                                    + '" class="btn btn-primary">'
+                                    + 'Book Now</a></p>',
+                            })
+                        }
+                        else{
+                            //console.log("room is not available")
+                            attention.error({
+                                msg: "No availability",
+                            });
+                        }
+                    })
+            }
+        });
+    })
+</script>
 {{end}}
